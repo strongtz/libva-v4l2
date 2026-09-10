@@ -1,1 +1,1 @@
-option('fastcv', type: 'feature', value: 'auto', description: 'VA-API scaling with FastCV on CDSP')
+option('fastcv', type: 'feature', value: 'disabled', description: 'VA-API scaling with FastCV on CDSP')

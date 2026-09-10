@@ -1,0 +1,23 @@
+Source: libva-v4l2
+Section: video
+Priority: optional
+Maintainer: Xilin Wu <sophon@radxa.com>
+Build-Depends: debhelper-compat (= 13), meson (>= 0.61), ninja-build, pkg-config,
+ libva-dev, libdrm-dev, libegl-dev, libgles-dev, libgbm-dev
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Homepage: https://github.com/strongtz/libva-v4l2
+Vcs-Git: https://github.com/strongtz/libva-v4l2.git
+Vcs-Browser: https://github.com/strongtz/libva-v4l2
+
+Package: libva-v4l2
+Architecture: arm64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Provides: va-driver
+Description: VA-API backend for Qualcomm Iris stateful V4L2 devices
+ Hardware video decoding and H.264/HEVC encoding through the Qualcomm Iris
+ stateful V4L2 M2M interface. This experimental driver targets SC8280XP,
+ including Radxa Dragon Q8B, and requires a compatible kernel and firmware.
+ .
+ Includes the MSM driver alias and GStreamer VA environment configuration.
+ FastCV video processing is disabled in distribution builds.

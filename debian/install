@@ -1,0 +1,2 @@
+packaging/environment/60-libva-v4l2.conf usr/lib/environment.d
+packaging/environment/libva-v4l2.sh etc/profile.d

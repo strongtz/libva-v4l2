@@ -1,0 +1,83 @@
+name: Debian packages
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: trixie
+            image: debian:trixie
+          - suite: noble
+            image: ubuntu:noble
+          - suite: resolute
+            image: ubuntu:resolute
+    container: ${{ matrix.image }}
+    env:
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - name: Install packaging tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates git build-essential devscripts equivs lintian
+      - uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: mk-build-deps --install --remove --tool 'apt-get -y --no-install-recommends' debian/control
+      - name: Build binary packages
+        env:
+          SUITE: ${{ matrix.suite }}
+        run: |
+          version=$(dpkg-parsechangelog -S Version)
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            test "$GITHUB_REF_NAME" = "v$version"
+          fi
+          DEBFULLNAME='libva-v4l2 CI' DEBEMAIL='noreply@github.com' \
+            dch --newversion "$version+$SUITE" --distribution "$SUITE" 'Build for the target distribution.'
+          dpkg-buildpackage -us -uc -b
+          mkdir -p artifacts
+          for artifact in ../*.deb ../*.ddeb ../*.buildinfo ../*.changes; do
+            if [ -f "$artifact" ]; then
+              cp "$artifact" artifacts/
+            fi
+          done
+      - name: Inspect packages
+        run: |
+          lintian --fail-on error artifacts/*.changes
+          dpkg-deb --contents artifacts/libva-v4l2_*.deb
+          apt-get install -y ./artifacts/libva-v4l2_*.deb
+          test "$(readlink /usr/lib/aarch64-linux-gnu/dri/msm_drv_video.so)" = v4l2_drv_video.so
+          cmp packaging/environment/60-libva-v4l2.conf /usr/lib/environment.d/60-libva-v4l2.conf
+          cmp packaging/environment/libva-v4l2.sh /etc/profile.d/libva-v4l2.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: libva-v4l2-${{ matrix.suite }}-arm64
+          path: artifacts/*
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: libva-v4l2-*-arm64
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: artifacts/*

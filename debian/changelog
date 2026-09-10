@@ -1,0 +1,6 @@
+libva-v4l2 (0.1.0-1) unstable; urgency=medium
+
+  * Initial Debian packaging for RadxaOS.
+  * Disable FastCV and retain GStreamer VA session configuration.
+
+ -- Xilin Wu <sophon@radxa.com>  Thu, 10 Sep 2026 16:00:00 +0800

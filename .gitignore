@@ -21,3 +21,13 @@ __pycache__/
 /packaging/arch/pkg/
 /packaging/arch/*.tar.gz
 /packaging/arch/*.pkg.tar.zst
+
+# Debian packaging artifacts.
+/obj-*/
+/debian/.debhelper/
+/debian/libva-v4l2/
+/debian/*.debhelper
+/debian/*.substvars
+/debian/files
+/artifacts/
+/*-build-deps_*.deb
